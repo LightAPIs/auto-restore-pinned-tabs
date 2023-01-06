@@ -1,21 +1,43 @@
 'use strict';
 
-// With background scripts you can communicate with popup
-// and contentScript files.
-// For more information on background script,
-// See https://developer.chrome.com/extensions/background_pages
+chrome.runtime.onStartup.addListener(async () => {
+  const result = await chrome.tabs.query({
+    pinned: true,
+  });
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.type === 'GREETINGS') {
-    const message: string = `Hi ${
-      sender.tab ? 'Con' : 'Pop'
-    }, my name is Bac. I am from Background. It's great to hear from you.`;
+  if (result.length === 0) {
+    chrome.sessions.getRecentlyClosed({}, (sessions) => {
+      if (!chrome.runtime.lastError) {
+        const restoreList: string[] = [];
+        for (const session of sessions) {
+          const { tab, window } = session;
+          if (window) {
+            const { tabs = [] } = window;
+            let pinnnedState = false;
+            tabs.forEach((value) => {
+              const { sessionId, pinned } = value;
+              if (sessionId != undefined && pinned) {
+                restoreList.push(sessionId);
+                pinnnedState = true;
+              }
+            });
 
-    // Log message coming from the `request` parameter
-    console.log(request.payload.message);
-    // Send a response message
-    sendResponse({
-      message,
+            if (pinnnedState) {
+              break;
+            }
+          } else if (tab) {
+            const { sessionId, pinned } = tab;
+            if (sessionId != undefined && pinned) {
+              restoreList.push(sessionId);
+              break;
+            }
+          }
+        }
+
+        restoreList.forEach((value) => {
+          chrome.sessions.restore(value);
+        });
+      }
     });
   }
 });

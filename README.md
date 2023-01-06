@@ -1,11 +1,6 @@
 # <img src="public/icons/icon_48.png" width="45" align="left"> Auto Restore Pinned Tabs
 
-My Chrome Extension
-
-## Features
-
-- Feature 1
-- Feature 2
+Automatically restore pinned tabs on other windows at browser startup.
 
 ## Install
 
